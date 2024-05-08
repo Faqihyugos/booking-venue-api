@@ -25,7 +25,7 @@ func (ur *UserRepository) Create(request _entities.User) (_entities.User, error)
 
 func (ur *UserRepository) GetByEmail(email string) (_entities.User, error) {
 	var user _entities.User
-	err := ur.DB.Where("email = ?", email).Find(&user).Error
+	err := ur.DB.Where("email = ?", email).Take(&user).Error
 	if err != nil {
 		return _entities.User{}, err
 	}

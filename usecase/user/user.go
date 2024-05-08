@@ -44,6 +44,13 @@ func (uuc *UserUseCase) CreateUser(request _entities.User) (_entities.User, erro
 }
 
 func (uuc *UserUseCase) LoginUser(email string, password string) (string, error) {
+	if email == "" {
+		return "", errors.New("Email can't be empty")
+	}
+	if password == "" {
+		return "", errors.New("Password can't be empty")
+	}
+	
 	user, err := uuc.userRepository.GetByEmail(email)
 	if err != nil {
 		return "", err
@@ -56,12 +63,7 @@ func (uuc *UserUseCase) LoginUser(email string, password string) (string, error)
 		return "", err
 	}
 
-	if email == "" {
-		return "", errors.New("Email can't be empty")
-	}
-	if password == "" {
-		return "", errors.New("Password can't be empty")
-	}
+	
 
 	return token, nil
 }
