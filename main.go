@@ -35,7 +35,7 @@ func main() {
 	}))
 	e.Use(_middleware.CustomLogger())
 
-	_route.RegisterUserPath(e, userHandler)
+	_route.AuthPath(e, userHandler)
 
 	log.Fatal(e.Start(fmt.Sprintf(":%v", config.HTTP.Port)))
 }

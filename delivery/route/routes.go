@@ -6,6 +6,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func RegisterUserPath(e *echo.Echo, uh _userHandler.UserHandler) {
-	e.POST("/api/register", uh.CreateUserHandler())
+func AuthPath(e *echo.Echo, uh _userHandler.UserHandler) {
+	apiGroup := e.Group("/api/v1")
+	apiGroup.POST("/register", uh.CreateUserHandler())
 }
