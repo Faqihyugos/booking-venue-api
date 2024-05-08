@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"booking-venue-api/delivery/helper"
+	"booking-venue-api/delivery/middleware"
 	_entities "booking-venue-api/entities/user"
 	_userRepository "booking-venue-api/repository/user"
 )
@@ -40,4 +41,27 @@ func (uuc *UserUseCase) CreateUser(request _entities.User) (_entities.User, erro
 	}
 
 	return users, err
+}
+
+func (uuc *UserUseCase) LoginUser(email string, password string) (string, error) {
+	user, err := uuc.userRepository.GetByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	if !helper.CheckPassHash(password, user.Password) {
+		return "", errors.New("Wrong password")
+	}
+	token, err := middleware.CreateToken(int(user.ID), user.Username)
+	if err != nil {
+		return "", err
+	}
+
+	if email == "" {
+		return "", errors.New("Email can't be empty")
+	}
+	if password == "" {
+		return "", errors.New("Password can't be empty")
+	}
+
+	return token, nil
 }
