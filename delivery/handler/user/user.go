@@ -1,6 +1,7 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"booking-venue-api/delivery/helper"
@@ -35,5 +36,23 @@ func (uh *UserHandler) CreateUserHandler() echo.HandlerFunc {
 			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("Register failed"))
 		}
 		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("Successfully registered"))
+	}
+}
+
+func (uh *UserHandler) LoginHandler() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var login _entities.User
+		err := c.Bind(&login)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Error to bind data"))
+		}
+		token, errorLogin := uh.userUseCase.LoginUser(login.Email, login.Password)
+		if errorLogin != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(fmt.Sprintf("%v", errorLogin)))
+		}
+		responseToken := map[string]interface{}{
+			"token": token,
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("Successfully logged in", responseToken))
 	}
 }
