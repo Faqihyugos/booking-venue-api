@@ -3,6 +3,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"booking-venue-api/delivery/helper"
 	_entities "booking-venue-api/entities/user"
@@ -54,5 +55,28 @@ func (uh *UserHandler) LoginHandler() echo.HandlerFunc {
 			"token": token,
 		}
 		return c.JSON(http.StatusOK, helper.ResponseSuccess("Successfully logged in", responseToken))
+	}
+}
+
+func (uh *UserHandler) GetUserByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		var user _entities.User
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Error to bind data"))
+		}
+		user, err = uh.userUseCase.GetUserByID(id)
+		if err != nil {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(fmt.Sprintf("%v", err)))
+		}
+		responseUser := map[string]interface{}{
+			"user": map[string]interface{}{
+				"fullname": user.Fullname,
+				"username": user.Username,
+				"email": user.Email,
+				"phone": user.PhoneNumber,
+			},
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("Get user successfully", responseUser))
 	}
 }

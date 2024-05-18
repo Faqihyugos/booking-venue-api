@@ -38,7 +38,32 @@ func TestRegister(t *testing.T) {
 
 }
 
+func TestGetUser(t *testing.T) {
+	t.Run("TestGetUserSuccess", func(t *testing.T) {
+		userUseCase := NewUserUseCase(mockUserRepository{})
+		data, err := userUseCase.GetUserByID(1)
+		assert.Nil(t, err)
+		assert.Equal(t, _entities.User{
+			Email:       "faq@email.com",
+			Username:    "faq",
+			Fullname:    "faq",
+			PhoneNumber: "082",
+		}, data)
+	})
+
+}
+
 type mockUserRepository struct{}
+
+// GetByID implements user.UserRepositoryInterface.
+func (m mockUserRepository) GetByID(id int) (_entities.User, error) {
+	return _entities.User{
+		Email:       "faq@email.com",
+		Username:    "faq",
+		Fullname:    "faq",
+		PhoneNumber: "082",
+	}, nil
+}
 
 // Create implements user.UserRepositoryInterface.
 func (m mockUserRepository) Create(request _entities.User) (_entities.User, error) {

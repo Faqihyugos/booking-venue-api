@@ -50,7 +50,7 @@ func (uuc *UserUseCase) LoginUser(email string, password string) (string, error)
 	if password == "" {
 		return "", errors.New("Password can't be empty")
 	}
-	
+
 	user, err := uuc.userRepository.GetByEmail(email)
 	if err != nil {
 		return "", err
@@ -63,7 +63,15 @@ func (uuc *UserUseCase) LoginUser(email string, password string) (string, error)
 		return "", err
 	}
 
-	
-
 	return token, nil
+}
+
+func (uuc *UserUseCase) GetUserByID(id int) (_entities.User, error) {
+
+	user, err := uuc.userRepository.GetByID(id)
+	if err != nil {
+		return user, errors.New("User not found")
+	}
+
+	return user, nil
 }

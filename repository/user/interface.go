@@ -5,4 +5,5 @@ import _entities "booking-venue-api/entities/user"
 type UserRepositoryInterface interface {
 	Create(request _entities.User) (_entities.User, error)
 	GetByEmail(email string) (_entities.User, error)
+	GetByID(id int) (_entities.User, error)
 }

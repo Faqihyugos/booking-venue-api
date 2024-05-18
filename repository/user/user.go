@@ -32,3 +32,13 @@ func (ur *UserRepository) GetByEmail(email string) (_entities.User, error) {
 
 	return user, nil
 }
+
+func (ur *UserRepository) GetByID(id int) (_entities.User, error) {
+	var user _entities.User
+	err := ur.DB.Where("id = ?",id).Take(&user).Error
+	if err != nil {
+		return _entities.User{}, err
+	}
+
+	return user, nil
+}
