@@ -43,6 +43,7 @@ func main() {
 	e.Use(_middleware.CustomLogger())
 
 	_route.AuthPath(e, userHandler)
+	_route.UserPath(e, userHandler)
 	_route.CategoryPath(e, categoryHandler)
 
 	log.Fatal(e.Start(fmt.Sprintf(":%v", config.HTTP.Port)))
