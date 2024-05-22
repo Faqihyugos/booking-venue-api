@@ -58,6 +58,7 @@
 ### Usage
 
 - [ERD](https://drive.google.com/file/d/1AmAjUVgPhHi7oRsINpn2z2xnQ_1Jr2ef/view)
+- [Postman](./postman/Booking%20venues%20api.postman_collection.json)
 
 <!-- GETTING STARTED -->
 
@@ -71,17 +72,11 @@ To get a local copy up and running, follow these simple example steps.
 This is an example of how to list things you need to use the software and how to install them.
 
 - Install Golang, Mysql, and Postman for testing
-- create an `.env` file
+- copy paste an `.env.example` file
 
-```bash
-  export APP_PORT=""
-  export JWT_SECRET="S3CR3T"
-  export DB_PORT="3306"
-  export DB_DRIVER="mysql"
-  export DB_NAME=""
-  export DB_ADDRESS="127.0.0.1"
-  export DB_USERNAME=""
-  export DB_PASSWORD=""
+```sh
+
+cp .env.example .env
 ```
 
 ### Installation
@@ -102,7 +97,7 @@ go mod tidy
 3. Run
 
 ```sh
-source .env
+
 go run main.go
 ```
 
