@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"booking-venue-api/delivery/helper"
-	_entities "booking-venue-api/entities/user"
+	_entities "booking-venue-api/entities"
 	_userUseCase "booking-venue-api/usecase/user"
 
 	"github.com/labstack/echo/v4"
@@ -33,7 +33,8 @@ func (uh *UserHandler) CreateUserHandler() echo.HandlerFunc {
 		}
 		_, err := uh.userUseCase.CreateUser(param)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("Register failed"))
+			fmt.Println(err)
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed(err.Error()))
 		}
 		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("Successfully registered"))
 	}

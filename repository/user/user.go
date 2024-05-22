@@ -1,7 +1,7 @@
 package user
 
 import (
-	_entities "booking-venue-api/entities/user"
+	_entities "booking-venue-api/entities"
 
 	"gorm.io/gorm"
 )
