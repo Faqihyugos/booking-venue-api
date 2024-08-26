@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"booking-venue-api/delivery/helper"
-	_entities "booking-venue-api/entities/user"
+	_input "booking-venue-api/delivery/input"
+	_middlewares "booking-venue-api/delivery/middleware"
 	_userUseCase "booking-venue-api/usecase/user"
+	"booking-venue-api/utils"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,19 +26,34 @@ func NewUserHandler(u _userUseCase.UserUseCaseInterface) UserHandler {
 	}
 }
 
-func (uh *UserHandler) CreateUserHandler() echo.HandlerFunc {
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
+
+func (uh *UserHandler) RegisterUserHandler() echo.HandlerFunc {
 
 	return func(c echo.Context) error {
-
-		var param _entities.User
-
-		errBind := c.Bind(&param)
+		var input _input.RegisterUserInput
+		errBind := c.Bind(&input)
 		if errBind != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("Error binding data"))
+			errors := utils.FormatValidationError(errBind)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusUnprocessableEntity, helper.ResponseFailed(errorMessage))
 		}
-		_, err := uh.userUseCase.CreateUser(param)
+
+		// Validate the input
+		errValidate := validate.Struct(input)
+		if errValidate != nil {
+			errors := utils.FormatValidationError(errValidate)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(errorMessage))
+		}
+
+		_, err := uh.userUseCase.RegisterUser(input)
 		if err != nil {
-			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed("Register failed"))
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed(err.Error()))
 		}
 		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("Successfully registered"))
 	}
@@ -42,12 +61,23 @@ func (uh *UserHandler) CreateUserHandler() echo.HandlerFunc {
 
 func (uh *UserHandler) LoginHandler() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var login _entities.User
+		var login _input.LoginInput
 		err := c.Bind(&login)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Error to bind data"))
+			errors := utils.FormatValidationError(err)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusUnprocessableEntity, helper.ResponseFailed(errorMessage))
 		}
-		token, errorLogin := uh.userUseCase.LoginUser(login.Email, login.Password)
+
+		// Validate the input
+		errValidate := validate.Struct(login)
+		if errValidate != nil {
+			errors := utils.FormatValidationError(errValidate)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(errorMessage))
+		}
+
+		token, errorLogin := uh.userUseCase.LoginUser(login)
 		if errorLogin != nil {
 			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(fmt.Sprintf("%v", errorLogin)))
 		}
@@ -58,25 +88,63 @@ func (uh *UserHandler) LoginHandler() echo.HandlerFunc {
 	}
 }
 
-func (uh *UserHandler) GetUserByID() echo.HandlerFunc {
+func (uh *UserHandler) UpdateUser() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		var user _entities.User
-		id, err := strconv.Atoi(c.Param("id"))
+		var updateRequest _input.UpdateUserInput
+
+		// check login status
+		idToken, errToken := _middlewares.ExtractToken(c)
+		if errToken != nil {
+			fmt.Println("idToken : ", idToken)
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
+		}
+
+		userId, _ := strconv.Atoi(c.Param("userId"))
+		// check authorization
+		if idToken != userId {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
+		}
+		err := c.Bind(&updateRequest)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Error to bind data"))
+			errors := utils.FormatValidationError(err)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusUnprocessableEntity, helper.ResponseFailed(errorMessage))
 		}
-		user, err = uh.userUseCase.GetUserByID(id)
+
+		// Validate the input
+		errValidate := validate.Struct(updateRequest)
+		if errValidate != nil {
+			errors := utils.FormatValidationError(errValidate)
+			errorMessage := strings.Join(errors, ", ")
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(errorMessage))
+		}
+
+		users, err := uh.userUseCase.UpdateUser(userId, updateRequest)
 		if err != nil {
-			return c.JSON(http.StatusBadRequest, helper.ResponseFailed(fmt.Sprintf("%v", err)))
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed(err.Error()))
 		}
-		responseUser := map[string]interface{}{
-			"user": map[string]interface{}{
-				"fullname": user.Fullname,
-				"username": user.Username,
-				"email": user.Email,
-				"phone": user.PhoneNumber,
-			},
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("Successfully update user", users))
+	}
+}
+
+func (uh *UserHandler) DeleteUser() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		// check login status
+		idToken, errToken := _middlewares.ExtractToken(c)
+		if errToken != nil {
+			fmt.Println("idToken : ", idToken)
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
 		}
-		return c.JSON(http.StatusOK, helper.ResponseSuccess("Get user successfully", responseUser))
+
+		userId, _ := strconv.Atoi(c.Param("userId"))
+		// check authorization
+		if idToken != userId {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
+		}
+		_, err := uh.userUseCase.DeleteUser(userId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed(err.Error()))
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("Successfully delete user"))
 	}
 }

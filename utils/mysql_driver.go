@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"booking-venue-api/config"
-	entities "booking-venue-api/entities/user"
+	"booking-venue-api/entities"
 
 	"github.com/labstack/gommon/log"
 	"gorm.io/driver/mysql"
@@ -35,4 +35,5 @@ func InitDB(config config.DBConfig) *gorm.DB {
 
 func InitialMigration(db *gorm.DB) {
 	db.AutoMigrate(&entities.User{})
+	db.AutoMigrate(&entities.Category{})
 }

@@ -1,8 +1,13 @@
 package entities
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type User struct {
+	ID             uint   `gorm:"primaryKey" json:"id"`
 	Fullname       string `gorm:"not null" json:"fullname" form:"fullname"`
 	Username       string `gorm:"not null;unique" json:"username" form:"username"`
 	Email          string `gorm:"not null;unique" json:"email" form:"email"`
@@ -13,6 +18,7 @@ type User struct {
 	Business_name  string `json:"business_name" form:"business_name"`
 	Business_type  string `json:"business_type" form:"business_type"`
 	Business_terms string `json:"business_terms" form:"business_terms"`
-	gorm.Model
-	Deleted gorm.DeletedAt
+	CreatedAt      time.Time
+	UpdatedAt      time.Time
+	DeleteAt       *gorm.DeletedAt
 }
