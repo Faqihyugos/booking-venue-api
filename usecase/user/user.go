@@ -32,7 +32,8 @@ func (uuc *UserUseCase) RegisterUser(input _input.RegisterUserInput) (_entities.
 	if err != nil {
 		return _entities.User{}, err
 	}
-	input.Password = password
+
+	user.Password = password
 
 	newUser, err := uuc.userRepository.Create(user)
 	if err != nil {
@@ -77,7 +78,13 @@ func (uuc *UserUseCase) UpdateUser(ID int, inputData _input.UpdateUserInput) (_e
 	user.Username = inputData.Username
 	user.Fullname = inputData.Fullname
 	user.PhoneNumber = inputData.PhoneNumber
-	user.Password = inputData.Password
+
+	password, err := helper.HashPassword(inputData.Password)
+	if err != nil {
+		return _entities.User{}, err
+	}
+
+	user.Password = password
 
 	user, err = uuc.userRepository.Update(user)
 	if err != nil {
@@ -118,14 +125,4 @@ func (uuc *UserUseCase) DeleteUser(ID int) (_entities.User, error) {
 
 	return deleteUser, nil
 
-}
-
-func (uuc *UserUseCase) GetUserByID(id int) (_entities.User, error) {
-
-	user, err := uuc.userRepository.GetByID(id)
-	if err != nil {
-		return user, errors.New("User not found")
-	}
-
-	return user, nil
 }

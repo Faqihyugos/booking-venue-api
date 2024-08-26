@@ -1,7 +1,9 @@
 package user
 
 import (
+	_input "booking-venue-api/delivery/input"
 	_entities "booking-venue-api/entities"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -10,9 +12,30 @@ import (
 func TestLogin(t *testing.T) {
 	t.Run("TestLoginSuccess", func(t *testing.T) {
 		userUseCase := NewUserUseCase(mockUserRepository{})
-		data, err := userUseCase.LoginUser("faq@email.com", "wrong_password")
+		loginInput := _input.LoginInput{
+			Email:    "faq@email.com",
+			Password: "12345",
+		}
+		data, err := userUseCase.LoginUser(loginInput)
+		assert.Nil(t, err)
+		assert.Equal(t, _entities.User{
+			Email:       "faq@email.com",
+			Password:    "12345",
+			Username:    "faq",
+			Fullname:    "faq",
+			PhoneNumber: "082",
+		}, data)
+	})
+
+	t.Run("TestLoginWrongPassword", func(t *testing.T) {
+		userUseCase := NewUserUseCase(mockUserRepository{})
+		loginInput := _input.LoginInput{
+			Email:    "faq@email.com",
+			Password: "wrong_password",
+		}
+		data, err := userUseCase.LoginUser(loginInput)
 		assert.EqualError(t, err, "Wrong password")
-		assert.Equal(t, "", data)
+		assert.Equal(t, _entities.User{}, data)
 	})
 }
 
@@ -35,7 +58,6 @@ func TestRegister(t *testing.T) {
 			PhoneNumber: "082",
 		}, data)
 	})
-
 }
 
 func TestGetUser(t *testing.T) {
@@ -50,13 +72,12 @@ func TestGetUser(t *testing.T) {
 			PhoneNumber: "082",
 		}, data)
 	})
-
 }
 
 type mockUserRepository struct{}
 
-// GetByID implements user.UserRepositoryInterface.
-func (m mockUserRepository) GetByID(id int) (_entities.User, error) {
+// FindByID implements user.UserRepositoryInterface.
+func (m mockUserRepository) FindByID(id int) (_entities.User, error) {
 	return _entities.User{
 		Email:       "faq@email.com",
 		Username:    "faq",
@@ -68,21 +89,39 @@ func (m mockUserRepository) GetByID(id int) (_entities.User, error) {
 // Create implements user.UserRepositoryInterface.
 func (m mockUserRepository) Create(request _entities.User) (_entities.User, error) {
 	return _entities.User{
-		Email:       "faq@email.com",
-		Password:    "12345",
-		Username:    "faq",
-		Fullname:    "faq",
-		PhoneNumber: "082",
+		Email:       request.Email,
+		Password:    request.Password,
+		Username:    request.Username,
+		Fullname:    request.Fullname,
+		PhoneNumber: request.PhoneNumber,
 	}, nil
+}
+
+// FindByEmail implements user.UserRepositoryInterface.
+func (m mockUserRepository) FindByEmail(email string) (_entities.User, error) {
+	if email == "faq@email.com" {
+		return _entities.User{
+			Email:       "faq@email.com",
+			Password:    "12345",
+			Username:    "faq",
+			Fullname:    "faq",
+			PhoneNumber: "082",
+		}, nil
+	}
+	return _entities.User{}, errors.New("User not found")
 }
 
 // GetByEmail implements user.UserRepositoryInterface.
 func (m mockUserRepository) GetByEmail(email string) (_entities.User, error) {
-	return _entities.User{
-		Email:       "faq@email.com",
-		Password:    "12345",
-		Username:    "faq",
-		Fullname:    "faq",
-		PhoneNumber: "082",
-	}, nil
+	return m.FindByEmail(email)
+}
+
+// Update implements user.UserRepositoryInterface.
+func (m mockUserRepository) Update(user _entities.User) (_entities.User, error) {
+	return user, nil
+}
+
+// Delete implements user.UserRepositoryInterface.
+func (m mockUserRepository) Delete(user _entities.User) (_entities.User, error) {
+	return user, nil
 }
