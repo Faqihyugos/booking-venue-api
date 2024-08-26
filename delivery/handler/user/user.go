@@ -148,3 +148,24 @@ func (uh *UserHandler) DeleteUser() echo.HandlerFunc {
 		return c.JSON(http.StatusOK, helper.ResponseSuccessWithoutData("Successfully delete user"))
 	}
 }
+
+// GetUserByID()
+func (uh *UserHandler) GetUserByID() echo.HandlerFunc {
+	return func(c echo.Context) error {
+		idToken, errToken := _middlewares.ExtractToken(c)
+		if errToken != nil {
+			fmt.Println("idToken : ", idToken)
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
+		}
+		userId, _ := strconv.Atoi(c.Param("userId"))
+		// check authorization
+		if idToken != userId {
+			return c.JSON(http.StatusBadRequest, helper.ResponseFailed("Unauthorized"))
+		}
+		users, err := uh.userUseCase.GetUserByID(userId)
+		if err != nil {
+			return c.JSON(http.StatusInternalServerError, helper.ResponseFailed(err.Error()))
+		}
+		return c.JSON(http.StatusOK, helper.ResponseSuccess("Successfully get user", users))
+	}
+}

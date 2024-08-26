@@ -12,13 +12,13 @@ func AuthPath(e *echo.Echo, uh _userHandler.UserHandler) {
 	apiGroup := e.Group("/api/v1")
 	apiGroup.POST("/register", uh.RegisterUserHandler())
 	apiGroup.POST("/login", uh.LoginHandler())
-	apiGroup.GET("/user/:id", uh.GetUserByID())
 }
 
 func UserPath(e *echo.Echo, uh _userHandler.UserHandler) {
 	apiGroup := e.Group("/api/v1")
 	apiGroup.PUT("/users/:userId", uh.UpdateUser(), _middlewares.JWTMiddleware())
 	apiGroup.DELETE("/users/:userId", uh.DeleteUser(), _middlewares.JWTMiddleware())
+	apiGroup.GET("/users/:userId", uh.GetUserByID(), _middlewares.JWTMiddleware())
 }
 
 func CategoryPath(e *echo.Echo, uh _categoryHandler.CategoryHandler) {
