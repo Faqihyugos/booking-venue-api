@@ -117,4 +117,15 @@ func (uuc *UserUseCase) DeleteUser(ID int) (_entities.User, error) {
 	}
 
 	return deleteUser, nil
+
+}
+
+func (uuc *UserUseCase) GetUserByID(id int) (_entities.User, error) {
+
+	user, err := uuc.userRepository.GetByID(id)
+	if err != nil {
+		return user, errors.New("User not found")
+	}
+
+	return user, nil
 }

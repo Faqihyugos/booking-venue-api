@@ -12,6 +12,7 @@ func AuthPath(e *echo.Echo, uh _userHandler.UserHandler) {
 	apiGroup := e.Group("/api/v1")
 	apiGroup.POST("/register", uh.RegisterUserHandler())
 	apiGroup.POST("/login", uh.LoginHandler())
+	apiGroup.GET("/user/:id", uh.GetUserByID())
 }
 
 func UserPath(e *echo.Echo, uh _userHandler.UserHandler) {
